@@ -92,6 +92,7 @@ def perfil(token):
         # Obtener con el token la info del usuario
         # mandar como parametros la info del usuario
         name = "Isaac"
+        email = "isaac@mail.com"
         fecha_nacimiento = "1998-06-16"
         edad = 23
         sexo = "Masculino"
@@ -101,6 +102,7 @@ def perfil(token):
 
         informacion_general = {
             "name": name,
+            "email": email,
             "fecha_nacimiento": fecha_nacimiento,
             "edad": edad,
             "sexo": sexo
@@ -110,18 +112,35 @@ def perfil(token):
             "estatura": estatura,
             "peso": peso,
         }
-
-        return render_template('perfil.html')
+        return render_template('perfil.html', token=token, ig= informacion_general, ic= informacion_clinica)
     if request.method == 'POST':
         # Hacer las actualizaciones en la base de datos del usuario
         # enviarle como parametros la info del usuario
-        return render_template('perfil.html')
+        name = request.form["name"]
+        email = request.form['email']
+        sexo = request.form['sex']
+        birthday = request.form['birthday']
+        weight = request.form['weight']
+        height = request.form['height']
+        age = 23
 
-@app.route('/<token>/editarPerfil', methods=['GET'])
-def editarPerfil(token):
-    return render_template('editarPerfil.html')
+        informacion_general = {
+            "name": name,
+            "email": email,
+            "fecha_nacimiento": birthday,
+            "edad": age,
+            "sexo": sexo
+        }
 
-@app.route('/<token>/prediagnosticos', megthods=['GET'])
+        informacion_clinica = {
+            "estatura": height,
+            "peso": weight,
+        }
+
+        return render_template('perfil.html', token=token, ig= informacion_general, ic= informacion_clinica )
+
+
+@app.route('/<token>/prediagnosticos', methods=['GET'])
 def prediagnosticos(token):
     if request.method == 'GET':
         pass
