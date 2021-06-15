@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from cargarModelo import cargar_modelo
+from cargarModelo import cargar_modelo, give_results
 from werkzeug.utils import secure_filename
 import os
 
@@ -23,8 +23,9 @@ def inicio():
 def enviar_imagen():
     if request.method == 'POST':
         f = request.files['archivo']
-        saveImage(f)
+        image_path = saveImage(f)
         print(f)
+        give_results(image_path)
         return f'Imagen enviada'
     else:
         return render_template('enviarImagen.html')
