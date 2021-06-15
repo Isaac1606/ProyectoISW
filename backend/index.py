@@ -68,12 +68,8 @@ def login():
         email = request.form['email']
         password = request.form['password']
         print(email,password)
-        json_test = {
-            "email": email,
-            "password": password,
-            "token": "Ae61xvfe7fjezq1",
-        } 
-        return redirect(url_for('prueba_Autorizado',token=json_test["token"]))
+        token = "Ae61xvfe7fjezq1" # generar el token de alguna forma  
+        return redirect(url_for('perfil',token=token))
 
 @app.route('/register', methods=['GET','POST'])
 def register():
@@ -87,12 +83,56 @@ def register():
         weight = request.form['weight']
         height = request.form['height']
         print(name, email, password, birthday, weight, height)
-        json_test = {
-            "email": email,
-            "password": password,
-            "token": "Ae61xvfe7fjezq1",
-        } 
-        return redirect(url_for('prueba_Autorizado',token=json_test["token"]))
+        token = "Ae61xvfe7fjezq1" # generar el token de alguna forma  
+        return redirect(url_for('perfil',token=token))
+
+@app.route('/<token>/perfil',methods=['GET','POST'])
+def perfil(token):
+    if request.method == 'GET':
+        # Obtener con el token la info del usuario
+        # mandar como parametros la info del usuario
+        name = "Isaac"
+        fecha_nacimiento = "1998-06-16"
+        edad = 23
+        sexo = "Masculino"
+        
+        estatura = 1.75
+        peso = 80
+
+        informacion_general = {
+            "name": name,
+            "fecha_nacimiento": fecha_nacimiento,
+            "edad": edad,
+            "sexo": sexo
+        }
+
+        informacion_clinica = {
+            "estatura": estatura,
+            "peso": peso,
+        }
+
+        return render_template('perfil.html')
+    if request.method == 'POST':
+        # Hacer las actualizaciones en la base de datos del usuario
+        # enviarle como parametros la info del usuario
+        return render_template('perfil.html')
+
+@app.route('/<token>/editarPerfil', methods=['GET'])
+def editarPerfil(token):
+    return render_template('editarPerfil.html')
+
+@app.route('/<token>/prediagnosticos', megthods=['GET'])
+def prediagnosticos(token):
+    if request.method == 'GET':
+        pass
+
+
+@app.route('/<token>/alergias', methods=['GET', 'POST'])
+def alergias(token):
+    if request.method == 'GET':
+        pass
+
+
 
 if __name__ == '__main__':
     cargar_modelo()
