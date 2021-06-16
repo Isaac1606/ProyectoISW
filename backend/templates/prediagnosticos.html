@@ -1,5 +1,21 @@
 {% extends "layout.html" %}
 {% block title %} Perfil {% endblock %}
 {% block content %}
-    
+    <div>
+        <h3> Prediagnosticos </h3>
+    </div>
+    {% for prediagnostico in prediagnosticos %}
+        <div class="row mt-2 mb-2">
+            <div class="col-6">
+                <img src="{{url_for('static', filename=filename)}}">
+            </div>
+            <div class="col-6">
+                {{fecha_prediagnostico}}
+                {{resultado_prediagnostico}}
+            </div>
+        </div>
+    {% endfor %}
+    <div>
+        <a class="btn btn-primary" href="{{url_for(''), token=token}}" role="button">Nuevo</a>
+    </div>
 {% endblock %}

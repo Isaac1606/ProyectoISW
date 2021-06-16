@@ -1,5 +1,21 @@
 {% extends "layout.html" %}
 {% block title %} Perfil {% endblock %}
 {% block content %}
-    
+    <div>
+        <h3> Detalles de Prediagnostico </h3> 
+    </div>
+
+    <div>
+        <h5>Fecha de diagnóstico </h5>
+        {{fecha_prediagnostico}}
+
+        <h5>Resultado</h5>
+        {{resultado_prediagnostico}}
+
+        <h5>Imágen analizada</h5>
+        <img src="{{url_for('static', filename=filename)}}">
+    </div>
+
+    <a class="btn btn-primary" href="{{url_for(''), token=token}}" role="button">Regresar</a>
+
 {% endblock %}
