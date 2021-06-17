@@ -1,0 +1,64 @@
+CREATE TABLE tipo_sangre (
+	id_tiposangre SERIAL PRIMARY KEY,
+	desc_tiposangre character varying(4) NOT NULL
+);
+
+CREATE TABLE tipo_piel (
+	id_tipopiel SERIAL PRIMARY KEY,
+	desc_tipopiel character varying(60) NOT NULL
+);
+
+CREATE TABLE alergias (
+	id_alergia SERIAL PRIMARY KEY,
+	desc_alergia character varying(30) NOT NULL
+);
+
+CREATE TYPE sexos AS ENUM ('Femenino', 'Masculino');
+
+CREATE TABLE usuarios (
+	id_usuario SERIAL PRIMARY KEY,
+	correo character varying(254) NOT NULL,
+	password character varying(32) NOT NULL,
+	nombre character varying(255) NOT NULL,
+	fecha_nac date NOT NULL,
+	sexo sexos DEFAULT 'Femenino'::sexos NOT NULL,
+	peso DOUBLE PRECISION,
+	estatura DOUBLE PRECISION,
+	id_tiposangre integer,
+	id_tipopiel integer,
+	constraint fk_ts foreign key (id_tiposangre) REFERENCES tipo_sangre (id_tiposangre),
+	constraint fk_tp foreign key (id_tipopiel) REFERENCES tipo_piel (id_tipopiel)
+);
+
+CREATE TABLE usuario_alergia (
+	id_usuario integer,
+	id_alergia integer,
+	fecha_descubrimiento date NOT NULL,
+	primary key (id_usuario,id_alergia),
+	constraint fk_u foreign key (id_usuario) REFERENCES usuarios (id_usuario),
+	constraint fk_a foreign key (id_alergia) REFERENCES alergias (id_alergia)
+);
+
+CREATE TABLE consultas (
+	id_consulta SERIAL PRIMARY KEY,
+	fecha_consulta date NOT NULL,
+	desc_consulta character varying(180) NOT NULL,
+	id_usuario integer,
+	constraint fk_u foreign key (id_usuario) REFERENCES usuarios (id_usuario)
+);
+
+CREATE TABLE prediagnosticos (
+	id_prediagnostico SERIAL PRIMARY KEY,
+	fecha_prediagnostico date NOT NULL,
+	url_imagen character varying(150),
+	resultado character varying(50),
+	id_usuario integer,
+	constraint fk_u foreign key (id_usuario) REFERENCES usuarios (id_usuario)	
+);
+
+CREATE TABLE tokens(
+	token character varying(60) NOT NULL,
+	id_usuario integer,
+	primary key (token,id_usuario),
+	constraint fk_u foreign key (id_usuario) REFERENCES usuarios (id_usuario)	
+);
