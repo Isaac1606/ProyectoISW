@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from cargarModelo import cargar_modelo, give_results
 from werkzeug.utils import secure_filename
+import db
 import os
 
 # Variable creamos un objeto con el nombre del archivo
@@ -30,128 +31,146 @@ def enviar_imagen():
     else:
         return render_template('enviarImagen.html')
 
-@app.route('/api/prueba', methods=['POST'])
-def api_prueba():
-    if request.method == 'POST':
-        pass
-
-@app.route('/prueba', methods=['GET', 'POST'])
-def prueba():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        # generar token
-        '''codigo para generar token'''
-        json_test = {
-            "username": username,
-            "password": password,
-            "token": "Ae61xvfe7fjezq1",
-        } 
-        return redirect(url_for('prueba_Autorizado',token=json_test["token"]))
-    else:
-        return render_template('prueba.html')
-
-@app.route('/pruebaAutorizado/<token>', methods=['GET','POST'])
-def prueba_Autorizado(token):
-    if request.method == 'GET':
-        # comprueba si tienes token
-        '''codigo para que compruebe el token'''
-
-        # aqui se devolveria el diccionario con los datos del usuario
-        return render_template('pruebaAutorizado.html',token=token)
-
 @app.route('/login', methods=['GET','POST'])
 def login():
     if request.method == 'GET':
         return render_template('login.html')
+
     elif request.method == 'POST':
+
         email = request.form['email']
         password = request.form['password']
-        print(email,password)
-        token = "Ae61xvfe7fjezq1" # generar el token de alguna forma  
+
+        token = db.checkCredentials(email,password)
+        if token is None :
+            return render_template('login.html')
+
         return redirect(url_for('perfil',token=token))
 
 @app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'GET':
-        return render_template('register.html')
+        bloods = db.getBloods()
+        skins = db.getSkins()
+        return render_template('register.html', bloods = bloods , skins = skins)
+
     elif request.method == 'POST':
+
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
         birthday = request.form['birthday']
+        sex = request.form['sex']
         weight = request.form['weight']
         height = request.form['height']
-        print(name, email, password, birthday, weight, height)
-        token = "Ae61xvfe7fjezq1" # generar el token de alguna forma  
+        blood = request.form['blood']
+        skin = request.form['skin']
+
+        userRequest = {
+            "email" : email,
+            "password" : password,
+            "name" : name,
+            "birthday" : birthday,
+            "sex" : sex,
+            "weight" : weight,
+            "height" : height,
+            "blood" : blood,
+            "skin" : skin
+        }
+
+        token = db.createUser(userRequest)
+        if token is None :
+            return render_template('register.html')
+
         return redirect(url_for('perfil',token=token))
 
 @app.route('/<token>/perfil',methods=['GET','POST'])
 def perfil(token):
     if request.method == 'GET':
-        # Obtener con el token la info del usuario
-        # mandar como parametros la info del usuario
-        name = "Isaac"
-        email = "isaac@mail.com"
-        fecha_nacimiento = "1998-06-16"
-        edad = 23
-        sexo = "Masculino"
-        
-        estatura = 1.75
-        peso = 80
+
+        usertoken = db.validateToken(token)
+        if usertoken is None :
+            return render_template('login.html')
+
+        user = db.getUser(usertoken[1])
+        if user is None :
+            return render_template('login.html')
 
         informacion_general = {
-            "name": name,
-            "email": email,
-            "fecha_nacimiento": fecha_nacimiento,
-            "edad": edad,
-            "sexo": sexo
+            "name": user['name'],
+            "email": user['email'],
+            "fecha_nacimiento": user['birthday'],
+            "sexo": user['sex']
         }
-
+        
         informacion_clinica = {
-            "estatura": estatura,
-            "peso": peso,
+            "estatura": user['height'],
+            "peso": user['weight'],
+            "skin" : user['skin'],
+            "blood" : user['blood']
         }
-        return render_template('perfil.html', token=token, ig= informacion_general, ic= informacion_clinica)
+        
+        bloods = db.getBloods()
+        skins = db.getSkins()
+        if bloods is None or skins is None :
+            return render_template('login.html')
+
+        return render_template('perfil.html', token=token, ig= informacion_general, ic= informacion_clinica, bloods = bloods, skins = skins)
+
     if request.method == 'POST':
-        # Hacer las actualizaciones en la base de datos del usuario
-        # enviarle como parametros la info del usuario
-        name = request.form["name"]
-        email = request.form['email']
-        sexo = request.form['sex']
+
+        name = request.form['name']
         birthday = request.form['birthday']
+        sex = request.form['sex']
         weight = request.form['weight']
         height = request.form['height']
-        age = 23
+        blood = request.form['blood']
+        skin = request.form['skin']
 
-        informacion_general = {
-            "name": name,
-            "email": email,
-            "fecha_nacimiento": birthday,
-            "edad": age,
-            "sexo": sexo
+        userRequest = {
+            "token" : token,
+            "name" : name,
+            "birthday" : birthday,
+            "sex" : sex,
+            "weight" : weight,
+            "height" : height,
+            "blood" : blood,
+            "skin" : skin
         }
+        db.updateUser(userRequest)
 
-        informacion_clinica = {
-            "estatura": height,
-            "peso": weight,
-        }
-
-        return render_template('perfil.html', token=token, ig= informacion_general, ic= informacion_clinica )
-
+        return redirect(url_for('perfil',token=token))
 
 @app.route('/<token>/prediagnosticos', methods=['GET'])
 def prediagnosticos(token):
     if request.method == 'GET':
         pass
 
-
 @app.route('/<token>/alergias', methods=['GET', 'POST'])
 def alergias(token):
     if request.method == 'GET':
-        pass
 
+        usertoken = db.validateToken(token)
+        if usertoken is None :
+            return render_template('login.html')
 
+        userAllergies = db.getUserAllergies(usertoken[1])
+
+        return render_template('perfil.html', token=token, allergies = userAllergies)
+
+    if request.method == 'POST':
+
+        allergy = request.form['allergy']
+        date = request.form['date']
+
+        userRequest = {
+            "token" : token,
+            "date" : date,
+            "allergy" : allergy
+        }
+        db.insertUserAllergy(userRequest)
+
+        return redirect(url_for('alergias',token=token))
 
 if __name__ == '__main__':
     cargar_modelo()
