@@ -246,6 +246,9 @@ def deleteUserToken(token):
     try :
         cur = connection.cursor()
         cur.execute(f"DELETE FROM tokens WHERE token='{token}'")
+        connection.commit()
+        cur.close()
+        connection.close()
     except :
         return None
 
