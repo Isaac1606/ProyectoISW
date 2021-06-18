@@ -47,8 +47,6 @@ def createUser(userRequest):
         sexo = userRequest['sex']
         peso = userRequest['weight']
         estatura = userRequest['height']
-        id_ts = userRequest['blood']
-        id_tp = userRequest['skin']
         id_ts = getBloodID(userRequest['blood'])
         id_tp = getSkinID(userRequest['skin'])
         cur.execute(f"INSERT INTO usuarios (correo,password,nombre,fecha_nac,sexo,peso,estatura,id_tiposangre,id_tipopiel) VALUES ('{correo}','{password}','{nombre}','{fecha_nac}','{sexo}','{peso}','{estatura}','{id_ts}','{id_tp}')")
@@ -157,6 +155,7 @@ def getUserAllergies(id_user):
             cur.execute(f"SELECT * FROM alergias WHERE id_alergia='{id_allergy}'")
             allergy = cur.fetchone()
             allergies.append(allergy[1],id_allergy[1])
+            print(allergies)
         return allergies
     except :
         return None
