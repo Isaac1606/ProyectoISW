@@ -57,8 +57,13 @@ CREATE TABLE prediagnosticos (
 );
 
 CREATE TABLE tokens(
-	token character varying(60) NOT NULL,
+	token character varying(60) NOT NULL PRIMARY KEY,
 	id_usuario integer,
-	primary key (token,id_usuario),
+	constraint fk_u foreign key (id_usuario) REFERENCES usuarios (id_usuario)	
+);
+
+CREATE TABLE mail_tokens(
+	token character varying(10) NOT NULL PRIMARY KEY,
+	id_usuario integer,
 	constraint fk_u foreign key (id_usuario) REFERENCES usuarios (id_usuario)	
 );

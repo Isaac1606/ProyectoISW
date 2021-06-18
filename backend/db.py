@@ -1,5 +1,7 @@
 from uuid import uuid4
+from random import randint
 import psycopg2
+import yagmail
 
 host = "localhost"
 user = "postgres"
@@ -48,8 +50,16 @@ def createUser(userRequest):
         id_tp = getSkinID(userRequest['skin'])
         cur.execute(f"INSERT INTO usuarios (correo,password,nombre,fecha_nac,sexo,peso,estatura,id_tiposangre,id_tipopiel) VALUES ('{correo}','{password}','{nombre}','{fecha_nac}','{sexo}','{peso}','{estatura}','{id_ts}','{id_tp}')")
         connection.commit()
+        new_token = False
+        while new_token is False :
+            print("while")
+            token = str(uuid4())
+            cur.execute(f"SELECT * FROM tokens WHERE token='{token}'")
+            ans = cur.fetchone()
+            if ans is None :
+                new_token = True
+        print("after while")
         cur.execute(f"SELECT * FROM usuarios WHERE correo='{correo}'")
-        token = str(uuid4())
         ans = cur.fetchone()
         id_usuario = ans[0]
         cur.execute(f"INSERT INTO tokens (token,id_usuario) VALUES ('{token}','{id_usuario}')")
@@ -185,7 +195,7 @@ def insertUserAllergy(userRequest):
         if token is None :
             cur.close()
             connection.close()
-            return False
+            return None
         user = token[1]
         date = userRequest["date"]
         allergy = getAllergyID(userRequest["allergy"])
@@ -216,6 +226,69 @@ def deleteUserAllergy(userRequest):
     except :
         return None
 
+def getUserConsults(id_user):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        cur.execute(f"SELECT * FROM consultas WHERE id_usuario='{id_user}' ORDER BY fecha_consulta")
+        ans = cur.fetchall()
+        consults = []
+        num = 0
+        for a in ans :
+            num += 1
+            a_dict = {
+                "id_consulta" : num,
+                "id_db" : a[0],
+                "fecha" : a[1],
+                "descripcion" : a[2]
+            }
+            consults.append(a_dict)
+        return consults
+    except :
+        return None
+
+def insertUserConsult(userRequest):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        token = validateToken(userRequest["token"])
+        if token is None :
+            cur.close()
+            connection.close()
+            return None
+        id_user = token[1]
+        date = userRequest["date"]
+        desc = userRequest["desc"]
+        cur.execute(f"INSERT INTO consultas (fecha_consulta,desc_consulta,id_usuario) VALUES ('{date}','{desc}','{id_user}')")
+        connection.commit()
+        cur.close()
+        connection.close()
+    except :
+        return None
+
+def deleteUserConsult(userRequest):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        token = validateToken(userRequest["token"])
+        if token is None :
+            cur.close()
+            connection.close()
+            return False
+        consulta = userRequest["id_consulta"]
+        cur.execute(f"DELETE FROM consultas WHERE id_consuta='{consulta}'")
+        connection.commit()
+        cur.close()
+        connection.close()
+    except :
+        return None
+
 def checkCredentials(mail,password):
     connection = connect()
     if connection is None :
@@ -226,9 +299,19 @@ def checkCredentials(mail,password):
         user = cur.fetchone()
         u_mail, u_password = user[1], user[2]
         if u_mail == mail and u_password == password :
-            token = str(uuid4())
+            new_token = False
+            while new_token is False :
+                print("while")
+                token = str(uuid4())
+                cur.execute(f"SELECT * FROM tokens WHERE token='{token}'")
+                ans = cur.fetchone()
+                if ans is None :
+                    new_token = True
+            print("after while")
             id_usuario = user[0]
+            print(f"INSERT INTO tokens (token,id_usuario) VALUES ('{token}','{id_usuario}')")
             cur.execute(f"INSERT INTO tokens (token,id_usuario) VALUES ('{token}','{id_usuario}')")
+            print(234)
             connection.commit()
             cur.close()
             connection.close()
@@ -246,6 +329,61 @@ def deleteUserToken(token):
     try :
         cur = connection.cursor()
         cur.execute(f"DELETE FROM tokens WHERE token='{token}'")
+        connection.commit()
+        cur.close()
+        connection.close()
+    except :
+        return None
+
+def sendMail(email):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        cur.execute(f"SELECT * FROM usuarios WHERE correo='{email}'")
+        user = cur.fetchone()
+        if user is None :
+            return None
+        while True :
+            token = ''.join(["{}".format(randint(0, 9)) for num in range(0, 6)])
+            cur.execute(f"SELECT * FROM mail_tokens WHERE token='{token}'")
+            ans = cur.fetchone()
+            if ans is None :
+                break
+        to = email
+        subject = "Recuperación contraseña"
+        contents = [
+            f"Hola, {user[3]}, favor de ingresar el siguiente código para recuperar tu contraseña:",
+            f"{token}",
+            f"¿No has sido tú quien ha solicitado la contraseña? Haz caso omiso."
+        ]
+        sender_email = ""
+        sender_password = ""
+        yag = yagmail.SMTP(sender_email,sender_password)
+        yag.send(to,subject, contents)
+
+        id_user = user[0]
+        cur.execute(f"INSERT INTO mail_tokens (token,id_usuario) VALUES ('{token}','{id_user}')")
+        connection.commit()
+        cur.close()
+        connection.close()
+    except :
+        return None
+
+def changePassword(token,password):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        cur.execute(f"SELECT * FROM mail_tokens WHERE token='{token}'")
+        ans = cur.fetchone()
+        if ans is None :
+            return None
+        id_user = ans[1]
+        cur.execute(f"UPDATE usuarios SET password='{password}' WHERE id_usuario='{id_user}'")
+        cur.execute(f"DELETE FROM mail_tokens WHERE token='{token}'")
         connection.commit()
         cur.close()
         connection.close()
