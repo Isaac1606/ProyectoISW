@@ -11,7 +11,7 @@
                 <label for="floatingName">Nombre</label>
             </div>
             <div class="form-floating mb-3">
-                <input name="email" type="email" class="form-control" id="floatingInput" placeholder="name@example.com" value="{{ig['email']}}">
+                <input name="email" type="email" disabled class="form-control" id="floatingInput" placeholder="name@example.com" value="{{ig['email']}}">
                 <label for="floatingInput">Correo</label>
             </div>
             <div class="form-floating mb-3">
@@ -42,16 +42,18 @@
             <div class="form-floating mb-3">
                 <select name="blood" id="BloodSelect" class="form-select">
                     <!-- Aqui se hace un for con las opciones  -->
-                    <option>O+</option>
-                    <option>B-</option>
+                    {% for blood in bloods %}
+                        <option>{{blood}}</option>
+                    {% endfor %}
                 </select>
                 <label for="BloodSelect" class="form-label">Tipo de Sangre</label>
             </div>
             <div class="form-floating mb-3">
                 <select name="skin" id="SkinSelect" class="form-select">
                     <!-- Aqui se hace un for con las opciones  -->
-                    <option>I</option>
-                    <option>II</option>
+                    {% for skin in skins %}
+                        <option>{{skin}}</option>
+                    {% endfor %}
                 </select>
                 <label for="SkinSelect" class="form-label">Tipo de Piel</label>
             </div>
