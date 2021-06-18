@@ -29,17 +29,13 @@ def createUser(userRequest):
     if connection is None :
         return None
     try :
-        print(1)
         cur = connection.cursor()
-        print(userRequest['email'])
         cur.execute(f"SELECT * FROM usuarios WHERE correo='{userRequest['email']}'")
         user = cur.fetchone()
-        print(1.5)
         if user is not None :
             cur.close()
             connection.close()
             return None
-        print(2)
         correo = userRequest['email']
         password = userRequest['password']
         nombre = userRequest['name'].encode()
@@ -50,23 +46,14 @@ def createUser(userRequest):
         estatura = userRequest['height']
         id_ts = userRequest['blood']
         id_tp = userRequest['skin']
-        print(3)
-        print(userRequest)
-        print(nombre)
         cur.execute(f"INSERT INTO usuarios (correo,password,nombre,fecha_nac,sexo,peso,estatura,id_tiposangre,id_tipopiel) VALUES ('{correo}','{password}','{nombre}','{fecha_nac}','{sexo}','{peso}','{estatura}','{id_ts}','{id_tp}')")
         connection.commit()
-        print(4)
         cur.execute(f"SELECT * FROM usuarios WHERE correo='{correo}'")
-        print(5)
         token = str(uuid4())
-        print(5.5)
         ans = cur.fetchone()
         id_usuario = ans[0]
-        print(5.6)
         cur.execute(f"INSERT INTO tokens (token,id_usuario) VALUES ('{token}','{id_usuario}')")
-        print(6)
         connection.commit()
-        print(7)
         cur.close()
         connection.close()
         return token
@@ -149,6 +136,26 @@ def getUser(id_user):
     except :
         return None
 
+def getUserAllergies(id_user):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        cur.execute(f"SELECT * FROM usuario_alergia WHERE id_usuario='{id_user}'")
+        ans = cur.fetchall()
+        id_allergies = []
+        for a in ans :
+            id_allergies.append([a[1],a[2]])
+        allergies = []
+        for id_allergy in id_allergies :
+            cur.execute(f"SELECT * FROM alergias WHERE id_alergia='{id_allergy}'")
+            allergy = cur.fetchone()
+            allergies.append(allergy[1],id_allergy[1])
+        return allergies
+    except :
+        return None
+
 def checkCredentials(mail,password):
     connection = connect()
     if connection is None :
@@ -206,7 +213,24 @@ def getSkins():
     except :
         return None
 
-def loadskins():
+def getAllergies():
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        cur.execute(f"SELECT * FROM alergias")
+        allergies = cur.fetchall()
+        if allergies is None :
+            return None
+        ans = []
+        for allergy in allergies :
+            ans.append(allergy[1])
+        return ans
+    except :
+        return None
+
+def loadSkins():
     connection = connect()
     cur = connection.cursor()
     skins = [
@@ -218,10 +242,28 @@ def loadskins():
         "VI Piel morena o negra"
     ]
     for skin in skins :
-        print(skin)
         skin = skin.encode()
         skin = skin.decode()
         cur.execute(f"INSERT INTO tipo_piel (desc_tipopiel) VALUES ('{skin}')")
+    connection.commit()
+    cur.close()
+    connection.close()
+
+def loadAllergies():
+    connection = connect()
+    cur = connection.cursor()
+    allergies = [
+        "Alergia a medicamentos",
+        "Alergia a comidas",
+        "Alergia a insectos",
+        "Alergia a latex",
+        "Alergia a mascotas",
+        "Alergia a polen"
+    ]
+    for allergy in allergies :
+        allergy = allergy.encode()
+        allergy = allergy.decode()
+        cur.execute(f"INSERT INTO alergias (desc_alergia) VALUES ('{allergy}')")
     connection.commit()
     cur.close()
     connection.close()

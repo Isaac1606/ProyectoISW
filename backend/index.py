@@ -43,7 +43,7 @@ def login():
 
         token = db.checkCredentials(email,password)
         if token is None :
-            return render_template('register.html')
+            return render_template('login.html')
 
         return redirect(url_for('perfil',token=token))
 
@@ -141,17 +141,36 @@ def perfil(token):
 
         return redirect(url_for('perfil',token=token))
 
-
 @app.route('/<token>/prediagnosticos', methods=['GET'])
 def prediagnosticos(token):
     if request.method == 'GET':
         pass
 
-
 @app.route('/<token>/alergias', methods=['GET', 'POST'])
 def alergias(token):
     if request.method == 'GET':
-        pass
+
+        usertoken = db.validateToken(token)
+        if usertoken is None :
+            return render_template('login.html')
+
+        userAllergies = db.getUserAllergies(usertoken[1])
+
+        return render_template('perfil.html', token=token, allergies = userAllergies)
+
+    if request.method == 'POST':
+
+        allergy = request.form['allergy']
+        date = request.form['date']
+
+        userRequest = {
+            "token" : token,
+            "date" : date,
+            "allergy" : allergy
+        }
+        db.insertUserAllergy(userRequest)
+
+        return redirect(url_for('alergias',token=token))
 
 if __name__ == '__main__':
     cargar_modelo()
