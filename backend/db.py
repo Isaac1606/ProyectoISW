@@ -44,8 +44,8 @@ def createUser(userRequest):
         sexo = userRequest['sex']
         peso = userRequest['weight']
         estatura = userRequest['height']
-        id_ts = userRequest['blood']
-        id_tp = userRequest['skin']
+        id_ts = getBloodID(userRequest['blood'])
+        id_tp = getSkinID(userRequest['skin'])
         cur.execute(f"INSERT INTO usuarios (correo,password,nombre,fecha_nac,sexo,peso,estatura,id_tiposangre,id_tipopiel) VALUES ('{correo}','{password}','{nombre}','{fecha_nac}','{sexo}','{peso}','{estatura}','{id_ts}','{id_tp}')")
         connection.commit()
         cur.execute(f"SELECT * FROM usuarios WHERE correo='{correo}'")
@@ -79,6 +79,18 @@ def getBloodID(blood):
     try :
         cur = connection.cursor()
         cur.execute(f"SELECT * FROM tipo_sangre WHERE desc_tiposangre='{blood}'")
+        ans = cur.fetchone()
+        return ans[0]
+    except :
+        return None
+
+def getAllergyID(allergy):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        cur.execute(f"SELECT * FROM alergias WHERE desc_alergia='{allergy}'")
         ans = cur.fetchone()
         return ans[0]
     except :
@@ -142,17 +154,65 @@ def getUserAllergies(id_user):
         return None
     try :
         cur = connection.cursor()
-        cur.execute(f"SELECT * FROM usuario_alergia WHERE id_usuario='{id_user}'")
+        cur.execute(f"SELECT * FROM usuario_alergia WHERE id_usuario='{id_user}' ORDER BY fecha_descubrimiento")
         ans = cur.fetchall()
         id_allergies = []
         for a in ans :
             id_allergies.append([a[1],a[2]])
         allergies = []
+        num = 0 
         for id_allergy in id_allergies :
-            cur.execute(f"SELECT * FROM alergias WHERE id_alergia='{id_allergy}'")
+            cur.execute(f"SELECT * FROM alergias WHERE id_alergia='{id_allergy[0]}'")
             allergy = cur.fetchone()
-            allergies.append(allergy[1],id_allergy[1])
+            num += 1
+            a_dict = {
+                "id_alergia" : num,
+                "fecha" : str(id_allergy[1]),
+                "descripcion" : allergy[1]
+            }
+            allergies.append(a_dict)
         return allergies
+    except :
+        return None
+
+def insertUserAllergy(userRequest):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        token = validateToken(userRequest["token"])
+        if token is None :
+            cur.close()
+            connection.close()
+            return False
+        user = token[1]
+        date = userRequest["date"]
+        allergy = getAllergyID(userRequest["allergy"])
+        cur.execute(f"INSERT INTO usuario_alergia (id_usuario,id_alergia,fecha_descubrimiento) VALUES ('{user}','{allergy}','{date}')")
+        connection.commit()
+        cur.close()
+        connection.close()
+    except :
+        return None
+
+def deleteUserAllergy(userRequest):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        token = validateToken(userRequest["token"])
+        if token is None :
+            cur.close()
+            connection.close()
+            return False
+        user = token[1]
+        allergy = getAllergyID(userRequest["allergy"])
+        cur.execute(f"DELETE FROM usuario_alergia WHERE id_usuario='{user}' AND id_alergia='{allergy}'")
+        connection.commit()
+        cur.close()
+        connection.close()
     except :
         return None
 
@@ -176,6 +236,16 @@ def checkCredentials(mail,password):
         cur.close()
         connection.close()
         return None
+    except :
+        return None
+
+def deleteUserToken(token):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        cur.execute(f"DELETE FROM tokens WHERE token='{token}'")
     except :
         return None
 

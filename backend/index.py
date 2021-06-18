@@ -156,12 +156,12 @@ def alergias(token):
 
         userAllergies = db.getUserAllergies(usertoken[1])
 
-        return render_template('perfil.html', token=token, allergies = userAllergies)
+        return render_template('alergias.html', token=token, allergies = userAllergies)
 
     if request.method == 'POST':
 
-        allergy = request.form['allergy']
-        date = request.form['date']
+        allergy = request.form['descripcionAlergia']
+        date = request.form['fechaAlergia']
 
         userRequest = {
             "token" : token,
@@ -171,6 +171,27 @@ def alergias(token):
         db.insertUserAllergy(userRequest)
 
         return redirect(url_for('alergias',token=token))
+
+@app.route('/<token>/borrarAlergia/<alergia>', methods=['POST'])
+def borrarAlergia(token,alergia):
+    if request.method == 'POST':
+
+        userRequest = {
+            "token" : token,
+            "allergy" : alergia
+        }
+
+        db.deleteUserAllergy(userRequest)
+
+        return redirect(url_for('alergias',token=token))
+
+@app.route("/<token>/logout", methods=['POST'])
+def logout(token):
+    if request.method == 'POST':
+
+        db.deleteUserToken(token)
+
+        return redirect(url_for('login'))
 
 if __name__ == '__main__':
     cargar_modelo()
