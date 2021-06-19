@@ -16,12 +16,16 @@
               <li><a href="{{url_for('perfil',token=token)}}" class="nav-link px-2 text-white">Perfil</a></li> 
               <!-- secondary -->
               <li><a href="{{url_for('alergias',token=token)}}" class="nav-link px-2 text-white">Alergias</a></li>
-              <li><a href="#" class="nav-link px-2 text-white">Consultas</a></li>
+              <li><a href="{{url_for('consultas',token=token)}}" class="nav-link px-2 text-white">Consultas</a></li>
               <li><a href="#" class="nav-link px-2 text-white">Prediagnosticos</a></li>
             </ul>
 
             <div class="text-end">
-                <a class="btn btn-warning" href="{{url_for('login')}}" role="button">Sign-out</a>
+              <form action="{{url_for('logout', token=token)}}" method="POST">
+                <button type="submit" class="btn btn-warning">
+                Cerrar sesión
+                </button>
+              </form>
             </div>
 
           </div>

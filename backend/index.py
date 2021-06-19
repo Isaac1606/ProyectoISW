@@ -233,7 +233,7 @@ def logout(token):
 
         return redirect(url_for('login'))
 
-@app.route('/password', methods=['POST'])
+@app.route('/password', methods=['GET','POST'])
 def passwordRecovery():
     if request.method == 'GET' :
 
@@ -267,6 +267,10 @@ def insertToken():
         
         return redirect(url_for('login'))
 
+@app.route('/prueba', methods=['GET'])
+def prueba(): 
+    return render_template('ingresaCodigo.html')
+    
 if __name__ == '__main__':
     cargar_modelo()
     app.run(host='127.0.0.1', port=5000, debug=True)

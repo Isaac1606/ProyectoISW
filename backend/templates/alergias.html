@@ -93,7 +93,12 @@
                                     <label for="floatingAlergia">Fecha de Descubrimiento de la Alergia</label>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <textarea name="descripcionAlergia" class="form-control" id="floatingDA" placeholder="name@example.com" style="height: 100px"></textarea>
+                                    <select name="descripcionAlergia" id="floatingDA"class="form-select" style="height:fit-content;">
+                                        <!-- Aqui se hace un for con las opciones  -->
+                                        {% for allergy in all_catalog %}
+                                                <option>{{allergy}}</option>
+                                        {% endfor %}
+                                    </select>
                                     <label for="floatingDA">Descripcion</label>
                                 </div>
                                 <input type="submit" id="submitAlergia" style="display: none">

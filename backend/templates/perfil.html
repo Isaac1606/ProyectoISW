@@ -43,8 +43,8 @@
                 <select name="blood" id="BloodSelect" class="form-select">
                     <!-- Aqui se hace un for con las opciones  -->
                     {% for blood in bloods %}
-                        {% if blood == ic['blood'] %}
-                            <option selected="selected">{{blood}}</option>
+                        {% if blood==ic['blood'] %}
+                            <option selected>{{blood}}</option>
                         {% else %}
                             <option>{{blood}}</option>
                         {% endif %}
@@ -56,7 +56,11 @@
                 <select name="skin" id="SkinSelect" class="form-select">
                     <!-- Aqui se hace un for con las opciones  -->
                     {% for skin in skins %}
-                        <option>{{skin}}</option>
+                        {% if skin==ic['skin']%}
+                            <option selected>{{skin}}</option>
+                        {% else %}
+                            <option>{{skin}}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 <label for="SkinSelect" class="form-label">Tipo de Piel</label>

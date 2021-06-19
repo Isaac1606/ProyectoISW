@@ -3,13 +3,20 @@ from random import randint
 import psycopg2
 import yagmail
 
+# host = "localhost"
+# user = "postgres"
+# password = "hola123"
+
+database = "test_isw"
 host = "localhost"
 user = "postgres"
-password = "hola123"
+password = "admin"
+port = 5432
+
 
 def connect():
     try:
-        connection = psycopg2.connect( host = host, user = user, password = password )
+        connection = psycopg2.connect( database= database, host = host, user = user, password = password )
         return connection
     except :
         return None
@@ -282,7 +289,7 @@ def deleteUserConsult(userRequest):
             connection.close()
             return False
         consulta = userRequest["id_consulta"]
-        cur.execute(f"DELETE FROM consultas WHERE id_consuta='{consulta}'")
+        cur.execute(f"DELETE FROM consultas WHERE id_consulta='{consulta}'")
         connection.commit()
         cur.close()
         connection.close()
