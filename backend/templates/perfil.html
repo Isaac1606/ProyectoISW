@@ -21,7 +21,11 @@
             <div class="form-floating mb-3">
                 <select name="sex" id="Select" class="form-select">
                     <option>Masculino</option>
-                    <option>Femenino</option>
+                    {% if ig['sexo'] == 'Femenino' %}
+                        <option selected>Femenino</option>
+                    {% else %}
+                        <option>Femenino</option>
+                    {% endif %}
                 </select>
                 <label for="Select" class="form-label">Sexo</label>
             </div>
@@ -31,11 +35,11 @@
             </div>
 
             <div class="form-floating mb-3">
-                <input name="weight" type="number" min="1" max="200" step=".5" class="form-control" id="floatingPeso" placeholder="1" value="{{ic['peso']}}">
+                <input name="weight" type="number" min="1" max="200" step=".01" class="form-control" id="floatingPeso" placeholder="1" value="{{ic['peso']}}">
                 <label for="floatingPeso">Peso en Kg</label>
             </div>
             <div class="form-floating mb-3">
-                <input name="height" type="number" min=".3" max="4" step=".05" class="form-control" id="floatingEstatura" placeholder="1" value="{{ic['estatura']}}">
+                <input name="height" type="number" min=".3" max="4" step=".01" class="form-control" id="floatingEstatura" placeholder="1" value="{{ic['estatura']}}">
                 <label for="floatingPeso">Estatura en m</label>
             </div>     
 

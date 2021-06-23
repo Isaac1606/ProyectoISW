@@ -1,22 +1,16 @@
 from uuid import uuid4
 from random import randint
+from datetime import datetime
 import psycopg2
 import yagmail
 
-# host = "localhost"
-# user = "postgres"
-# password = "hola123"
-
-database = "test_isw"
 host = "localhost"
 user = "postgres"
-password = "admin"
-port = 5432
-
+password = "hola123"
 
 def connect():
     try:
-        connection = psycopg2.connect( database= database, host = host, user = user, password = password )
+        connection = psycopg2.connect( host = host, user = user, password = password )
         return connection
     except :
         return None
@@ -147,19 +141,23 @@ def getUser(id_user):
         return None
     try :
         cur = connection.cursor()
-        cur.execute(f"SELECT * FROM usuarios WHERE id_usuario='{id_user}'")
+        cur.execute(f"SELECT usuarios.id_usuario, usuarios.correo, usuarios.nombre, usuarios.fecha_nac, usuarios.sexo, \
+                      usuarios.peso, usuarios.estatura, tipo_sangre.desc_tiposangre, tipo_piel.desc_tipopiel \
+                      FROM usuarios INNER JOIN tipo_piel ON usuarios.id_tipopiel = tipo_piel.id_tipopiel \
+                      INNER JOIN tipo_sangre ON usuarios.id_tiposangre = tipo_sangre.id_tiposangre \
+                      WHERE usuarios.id_usuario='{id_user}'")    
         user = cur.fetchone()
         if user is None :
             return None
         userResponse = {
-            "name" : user[3],
+            "name" : user[2],
             "email" : user[1],
-            "birthday" : user[4],
-            "sex" : user[5],
-            "height" : user[7],
-            "weight" : user[6],
-            "skin" : "1",
-            "blood" : "1"
+            "birthday" : user[3],
+            "sex" : user[4],
+            "height" : user[6],
+            "weight" : user[5],
+            "skin" : user[8],
+            "blood" : user[7]
         }
         return userResponse
     except :
@@ -296,6 +294,101 @@ def deleteUserConsult(userRequest):
     except :
         return None
 
+def getUserPrediagnostics(id_user):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        cur.execute(f"SELECT * FROM prediagnosticos WHERE id_usuario='{id_user}' ORDER BY fecha_prediagnostico")
+        ans = cur.fetchall()
+        pred = []
+        num = 0
+        for a in ans :
+            num += 1
+            a_dict = {
+                "id_prediagnostico" : num,
+                "id_db" : a[0],
+                "resultado" : a[3],
+                "fecha" : a[1]
+            }
+            pred.append(a_dict)
+        return pred
+    except : 
+        return None
+
+def getUserPrediagnostic(userRequest):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        token = validateToken(userRequest["token"])
+        if token is None :
+            cur.close()
+            connection.close()
+            return False
+        prediagnostico = userRequest["id_prediagnostico"]
+        cur.execute(f"SELECT * FROM prediagnosticos WHERE id_prediagnostico='{prediagnostico}'")
+        ans = cur.fetchone()
+        if ans is None :
+            cur.close()
+            connection.close()
+            return None
+        response = {
+            "date" : ans[1],
+            "res" : ans[3],
+            "filename" : ans[2]
+        }
+        cur.close()
+        connection.close()
+        return response
+    except :
+        return None
+
+def insertUserPrediagnostic(userRequest):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        token = validateToken(userRequest["token"])
+        if token is None :
+            cur.close()
+            connection.close()
+            return None
+        id_user = token[1]
+        fecha = datetime.now()
+        fecha = fecha.strftime("%Y-%m-%d")
+        res = userRequest["res"]
+        url = userRequest["filename"]
+        print((f"INSERT INTO prediagnosticos (fecha_prediagnostico,url_imagen,resultado,id_usuario) VALUES ('{fecha}','{url}','{res}','{id_user}')"))
+        cur.execute(f"INSERT INTO prediagnosticos (fecha_prediagnostico,url_imagen,resultado,id_usuario) VALUES ('{fecha}','{url}','{res}','{id_user}')")
+        connection.commit()
+        cur.close()
+        connection.close()
+    except :
+        return None
+
+def deleteUserPrediagnostic(userRequest):
+    connection = connect()
+    if connection is None :
+        return None
+    try :
+        cur = connection.cursor()
+        token = validateToken(userRequest["token"])
+        if token is None :
+            cur.close()
+            connection.close()
+            return False
+        prediagnostico = userRequest["id_prediagnostico"]
+        cur.execute(f"DELETE FROM prediagnosticos WHERE id_prediagnostico='{prediagnostico}'")
+        connection.commit()
+        cur.close()
+        connection.close()
+    except :
+        return None
+
 def checkCredentials(mail,password):
     connection = connect()
     if connection is None :
@@ -365,8 +458,8 @@ def sendMail(email):
             f"{token}",
             f"¿No has sido tú quien ha solicitado la contraseña? Haz caso omiso."
         ]
-        sender_email = ""
-        sender_password = ""
+        sender_email = "proyectoiswmelanoma@gmail.com"
+        sender_password = "Hola12345"
         yag = yagmail.SMTP(sender_email,sender_password)
         yag.send(to,subject, contents)
 
@@ -375,6 +468,7 @@ def sendMail(email):
         connection.commit()
         cur.close()
         connection.close()
+        return True
     except :
         return None
 

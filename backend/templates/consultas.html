@@ -17,8 +17,8 @@
               <li><a href="{{url_for('perfil',token=token)}}" class="nav-link px-2 text-white">Perfil</a></li> 
               <!-- secondary -->
               <li><a href="{{url_for('alergias',token=token)}}" class="nav-link px-2 text-white">Alergias</a></li>
-              <li><a href="#" class="nav-link px-2 text-white">Consultas</a></li>
-              <li><a href="#" class="nav-link px-2 text-white">Prediagnosticos</a></li>
+              <li><a href="{{url_for('consultas',token=token)}}" class="nav-link px-2 text-white">Consultas</a></li>
+              <li><a href="{{url_for('prediagnosticos',token=token)}}" class="nav-link px-2 text-white">Prediagnosticos</a></li>
             </ul>
 
             <div class="text-end">
@@ -37,7 +37,7 @@
         {% if consultas %}
             <div>
                 <br>
-                <h3>Lista de consultas</h3>
+                <h3>Consultas</h3>
             </div>
             <table class="styled-table">
                 <thead>
@@ -86,12 +86,16 @@
                     <div class="modal-body">
                         <form class="col align-self-center" action="" method="POST" enctype="multipart/form-data">
                             <div class="form-floating mb-3">
-                                <input name="fechaConsulta" type="date" class="form-control" id="floatingConsulta" placeholder="dd/mm/aaaa">
+                                <input name="fechaConsulta" type="date" class="form-control" id="floatingConsulta" placeholder="dd/mm/aaaa" required>
                                 <label for="floatingConsulta">Fecha de la Consulta</label>
                             </div>
                             <div class="form-floating mb-3">
-                                <textarea name="descripcionConsulta" class="form-control" id="floatingConsulta" placeholder="name@example.com" style="height: 100px"></textarea>
-                                <label for="floatingConsulta">Descripcion</label>
+                                <small>Descripción</small>
+                                <textarea name="descripcionConsulta" class="form-control" id="floatingConsulta"  style="height: 100px" onblur="textCounter(this,this.form.counter,180);" onkeyup="textCounter(this,this.form.counter,180);"></textarea>
+                                <div style="display: flex; justify-content: flex-end; align-items: center">
+                                    <input class="cen-input" onblur="textCounter(this.form.recipients,this,180);" disabled="" onfocus="this.blur();" tabindex="999" maxlength="2" size="1" style="width: 40px" value="0" name="counter">
+                                    <small>/180</small>
+                                </div>
                             </div>
                             <input type="submit" id="submitConsulta" style="display: none">
                         </form>
@@ -109,6 +113,19 @@
         document.getElementById("btnConsulta").addEventListener("click", () => {
             document.getElementById("submitConsulta").click();
         });
+
+        function textCounter( field, countfield, maxlimit ) {
+            if ( field.value.length > maxlimit ) {
+            field.value = field.value.substring( 0, maxlimit );
+            field.blur();
+            field.focus();
+            return false;
+            }
+            else {
+            countfield.value = field.value.length;
+            }
+        }
+
     </script>
 </body>
 </html>

@@ -1,21 +1,33 @@
-{% extends "layout.html" %}
+{% extends "layout2.html" %}
 {% block title %} Perfil {% endblock %}
 {% block content %}
+    <br>
     <div>
         <h3> Detalles de Prediagnostico </h3> 
     </div>
-
     <div>
-        <h5>Fecha de diagnóstico </h5>
-        {{fecha_prediagnostico}}
-
-        <h5>Resultado</h5>
-        {{resultado_prediagnostico}}
-
-        <h5>Imágen analizada</h5>
-        <img src="{{url_for('static', filename=filename)}}">
+        <center>
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Fecha de consulta</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{fecha_prediagnostico}}</td>
+                        <td>{{resultado_prediagnostico}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h5>Imágen analizada</h5>
+            <span>
+                <img src="{{url_for('static', filename=filename)}}">
+            </span>
+        </center>
     </div>
 
-    <a class="btn btn-primary" href="{{url_for(''), token=token}}" role="button">Regresar</a>
-
+    <a class="btn btn-primary" href="{{url_for('prediagnosticos',token=token)}}" role="button">Regresar</a>
+    
 {% endblock %}

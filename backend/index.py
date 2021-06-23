@@ -141,11 +141,6 @@ def perfil(token):
 
         return redirect(url_for('perfil',token=token))
 
-@app.route('/<token>/prediagnosticos', methods=['GET'])
-def prediagnosticos(token):
-    if request.method == 'GET':
-        pass
-
 @app.route('/<token>/alergias', methods=['GET', 'POST'])
 def alergias(token):
     if request.method == 'GET':
@@ -201,6 +196,8 @@ def consultas(token):
 
         consult_date = request.form['fechaConsulta']
         consult_desc = request.form['descripcionConsulta']
+        if consult_desc == "":
+            return redirect(url_for('consultas',token=token))
 
         userRequest = {
             "token" : token,
@@ -249,7 +246,7 @@ def passwordRecovery():
 
         return redirect(url_for('insertToken'))
 
-@app.route('/newpassword', methods=['POST'])
+@app.route('/newpassword', methods=['GET','POST'])
 def insertToken():
     if request.method == 'GET' :
 
@@ -266,6 +263,70 @@ def insertToken():
         db.changePassword(codigo,password)
         
         return redirect(url_for('login'))
+
+@app.route('/<token>/prediagnosticos', methods=['GET','POST'])
+def prediagnosticos(token):
+    if request.method == 'GET':
+        
+        usertoken = db.validateToken(token)
+        if usertoken is None :
+            return render_template('login.html')
+        
+        userPrediagnostics = db.getUserPrediagnostics(usertoken[1])
+        return render_template('prediagnosticos.html', token = token , prediagnosticos = userPrediagnostics)
+
+    elif request.method == 'POST':
+
+        f = request.files['archivo']
+        if f.filename == '' :
+            return redirect(url_for('prediagnosticos',token=token))    
+        image_path = saveImage(f)
+        res = give_results(image_path)
+
+        userRequest = {
+            "token" : token,
+            "filename" : f.filename,
+            "res" : res
+        }
+
+        db.insertUserPrediagnostic(userRequest)
+
+        return redirect(url_for('prediagnosticos',token=token))
+
+@app.route('/<token>/borrarPrediagnostico/<id_prediagnostico>', methods=['POST'])
+def borrarPrediagnostico(token,id_prediagnostico):
+    if request.method == 'POST':
+
+        userRequest = {
+            "token" : token,
+            "id_prediagnostico" : id_prediagnostico
+        }
+
+        db.deleteUserPrediagnostic(userRequest)
+
+        return redirect(url_for('prediagnosticos',token=token))
+
+@app.route('/<token>/prediagnosticos/<id_prediagnostico>', methods=['GET'])
+def prediagnostico(token,id_prediagnostico):
+    if request.method == 'GET' :
+        
+        usertoken = db.validateToken(token)
+        if usertoken is None :
+            return render_template('login.html')
+
+        userRequest = {
+            "token" : token,
+            "id_prediagnostico" : id_prediagnostico
+        }
+        prediagnostic = db.getUserPrediagnostic(userRequest)
+        if prediagnostic is None :
+            return redirect(url_for('prediagnosticos',token=token))
+
+        date = prediagnostic['date']
+        res = prediagnostic['res']
+        filename = prediagnostic['filename']
+        
+        return render_template('prediagnostico.html',token = token, fecha_prediagnostico = date, resultado_prediagnostico = res, filename = filename)
 
 @app.route('/prueba', methods=['GET'])
 def prueba(): 

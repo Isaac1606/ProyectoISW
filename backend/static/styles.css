@@ -34,3 +34,14 @@
     font-weight: bold;
     color: #009879;
 }
+
+.cen-input { 
+    text-align: right; 
+}
+
+span {
+    display: inline-block;
+}
+img {
+    width: 50%;
+}

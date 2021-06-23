@@ -51,6 +51,6 @@ def give_results(image_test_path):
     # print(prediction)
     
     if prediction == 0 and yhat[0][prediction]>.5:
-        print(f"La imagen {ntpath.basename(image_test_path)}, muestra una lesión en la piel con un %{yhat[0][prediction]*100:.2f} de ser melanoma")
+        return f"La imagen muestra una lesión en la piel con un {yhat[0][prediction]*100:.2f}% de ser melanoma."
     else:
-        print(f"La imagen {ntpath.basename(image_test_path)}, muestra una lesión en la piel que no es melanoma") 
+        return f"La imagen muestra una lesión en la piel que no es melanoma, con un {yhat[0][0]*100:.2f}% de serlo."
